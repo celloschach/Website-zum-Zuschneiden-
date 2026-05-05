@@ -6,50 +6,24 @@
   <title>Bild-Tool</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    /* Cropper-Optik zusätzlich schärfen, damit die Ziehpunkte klar erkennbar sind */
-    .cropper-view-box,
-    .cropper-face {
-      border-radius: 0;
-    }
-
-    .cropper-line,
-    .cropper-point {
-      background-color: #7c9cff;
-    }
-
-    .cropper-point {
-      width: 12px;
-      height: 12px;
-      opacity: 1;
-    }
-
-    .cropper-crop-box {
-      outline: 2px solid rgba(124,156,255,0.65);
-      outline-offset: -2px;
-    }
-
-    .cropper-modal {
-      background: rgba(0,0,0,0.55);
-    }
-
     :root {
-    :root {
-      --bg: #0b1020;
-      --panel: rgba(255,255,255,0.06);
-      --panel-2: rgba(255,255,255,0.09);
-      --border: rgba(255,255,255,0.12);
-      --text: #eaf0ff;
-      --muted: #a8b3cf;
-      --accent: #7c9cff;
-      --accent-2: #5eead4;
-      --danger: #ff7d7d;
-      --shadow: 0 18px 60px rgba(0,0,0,0.35);
-      --radius: 22px;
+      --bg: #eef3ff;
+      --bg2: #f8fbff;
+      --panel: rgba(255,255,255,0.86);
+      --panel-solid: #ffffff;
+      --border: rgba(20, 40, 90, 0.12);
+      --text: #10203a;
+      --muted: #5d6b84;
+      --accent: #2f6bff;
+      --accent2: #13b8a6;
+      --danger: #d94b4b;
+      --shadow: 0 20px 60px rgba(13, 24, 54, 0.12);
+      --radius: 24px;
     }
 
     * { box-sizing: border-box; }
@@ -59,54 +33,54 @@
       min-height: 100%;
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background:
-        radial-gradient(circle at top left, rgba(124,156,255,0.20), transparent 30%),
-        radial-gradient(circle at top right, rgba(94,234,212,0.14), transparent 28%),
-        linear-gradient(180deg, #08101f 0%, #0b1020 100%);
+        radial-gradient(circle at top left, rgba(47,107,255,0.15), transparent 28%),
+        radial-gradient(circle at top right, rgba(19,184,166,0.12), transparent 26%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
       color: var(--text);
     }
 
     body {
-      padding: 24px;
+      padding: 22px;
     }
 
     .app {
-      max-width: 1200px;
+      max-width: 1280px;
       margin: 0 auto;
     }
 
     .header {
       display: flex;
-      align-items: flex-end;
       justify-content: space-between;
       gap: 20px;
-      margin-bottom: 22px;
+      align-items: end;
       flex-wrap: wrap;
+      margin-bottom: 18px;
     }
 
     .title h1 {
       margin: 0 0 8px;
-      font-size: clamp(28px, 4vw, 42px);
+      font-size: clamp(30px, 4vw, 46px);
       line-height: 1.05;
+      letter-spacing: -0.03em;
     }
 
     .title p {
       margin: 0;
+      max-width: 78ch;
       color: var(--muted);
-      max-width: 72ch;
-      line-height: 1.5;
+      line-height: 1.55;
     }
 
     .tabs {
       display: inline-flex;
       gap: 8px;
       padding: 8px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
       border-radius: 999px;
+      background: rgba(255,255,255,0.7);
+      border: 1px solid var(--border);
       box-shadow: var(--shadow);
-      margin-bottom: 20px;
+      margin-bottom: 18px;
       backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
     }
 
     .tab-btn {
@@ -115,15 +89,15 @@
       color: var(--muted);
       padding: 12px 18px;
       border-radius: 999px;
+      font-weight: 800;
       cursor: pointer;
-      font-weight: 700;
-      transition: 0.2s ease;
+      transition: 0.18s ease;
     }
 
     .tab-btn.active {
-      background: linear-gradient(135deg, rgba(124,156,255,0.22), rgba(94,234,212,0.18));
+      background: linear-gradient(135deg, rgba(47,107,255,0.14), rgba(19,184,166,0.14));
       color: var(--text);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.10);
+      box-shadow: inset 0 0 0 1px rgba(47,107,255,0.12);
     }
 
     .panel {
@@ -133,7 +107,7 @@
 
     .panel.active {
       display: grid;
-      grid-template-columns: 340px 1fr;
+      grid-template-columns: 360px 1fr;
       align-items: start;
     }
 
@@ -143,7 +117,7 @@
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      overflow: hidden;
     }
 
     .controls {
@@ -152,16 +126,21 @@
       gap: 14px;
     }
 
-    .card h2 {
-      margin: 0 0 4px;
+    .preview {
+      padding: 18px;
+      min-height: 680px;
+    }
+
+    h2 {
+      margin: 0 0 6px;
       font-size: 18px;
     }
 
-    .card .sub {
-      margin: 0 0 8px;
+    .sub {
+      margin: 0;
       color: var(--muted);
+      line-height: 1.5;
       font-size: 14px;
-      line-height: 1.45;
     }
 
     .field {
@@ -171,19 +150,14 @@
 
     label {
       font-size: 13px;
+      font-weight: 700;
       color: var(--muted);
-      font-weight: 600;
     }
 
-    input[type="file"],
-    select,
-    input[type="range"] {
+    input[type="file"], select, input[type="number"] {
       width: 100%;
-    }
-
-    select, input[type="file"], input[type="number"] {
-      background: rgba(255,255,255,0.06);
       border: 1px solid var(--border);
+      background: var(--panel-solid);
       color: var(--text);
       border-radius: 14px;
       padding: 12px 14px;
@@ -191,6 +165,7 @@
     }
 
     input[type="range"] {
+      width: 100%;
       accent-color: var(--accent);
     }
 
@@ -204,7 +179,7 @@
       border: 0;
       border-radius: 14px;
       padding: 12px 14px;
-      font-weight: 700;
+      font-weight: 800;
       cursor: pointer;
       transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
     }
@@ -213,55 +188,69 @@
     button:active { transform: translateY(0); }
 
     .primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      color: #07111f;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
     }
 
     .secondary {
-      background: rgba(255,255,255,0.08);
+      background: rgba(47,107,255,0.08);
       color: var(--text);
-      border: 1px solid var(--border);
+      border: 1px solid rgba(47,107,255,0.12);
     }
 
     .danger {
-      background: rgba(255,125,125,0.12);
-      color: #ffd2d2;
-      border: 1px solid rgba(255,125,125,0.22);
-    }
-
-    .preview {
-      padding: 18px;
-      min-height: 640px;
+      background: rgba(217,75,75,0.08);
+      color: var(--danger);
+      border: 1px solid rgba(217,75,75,0.14);
     }
 
     .workspace {
-      min-height: 560px;
-      display: grid;
-      place-items: center;
-      border: 1px dashed rgba(255,255,255,0.16);
+      min-height: 644px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(248,251,255,0.95));
       border-radius: 18px;
-      background: rgba(255,255,255,0.03);
+      border: 1px dashed rgba(16,32,58,0.14);
       overflow: hidden;
       position: relative;
+      display: grid;
+      place-items: center;
+      padding: 16px;
     }
 
-    .workspace .hint {
+    .hint {
       color: var(--muted);
       text-align: center;
+      line-height: 1.55;
       padding: 20px;
-      line-height: 1.5;
     }
 
     .crop-area {
-      width: 100%;
-      max-height: 72vh;
       display: block;
+      max-width: 100%;
+      max-height: 80vh;
+      opacity: 1;
+    }
+
+    .status {
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.8);
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .mini {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
     }
 
     .output-box {
+      width: 100%;
       display: grid;
       gap: 14px;
-      width: 100%;
     }
 
     .output-list {
@@ -271,75 +260,93 @@
 
     .output-item {
       display: grid;
-      grid-template-columns: 96px 1fr auto;
-      gap: 12px;
+      grid-template-columns: 120px 1fr auto;
+      gap: 14px;
       align-items: center;
       padding: 12px;
-      background: rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.92);
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: 18px;
     }
 
-    .output-item img {
-      width: 96px;
-      height: 72px;
+    .output-thumb {
+      width: 120px;
+      height: 88px;
+      border-radius: 14px;
       object-fit: cover;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(0,0,0,0.2);
+      background: #eef3ff;
+      border: 1px solid rgba(16,32,58,0.08);
     }
 
-    .output-info {
-      min-width: 0;
+    .pdf-thumb {
+      width: 120px;
+      height: 88px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(47,107,255,0.12), rgba(19,184,166,0.12));
+      border: 1px solid rgba(16,32,58,0.08);
+      color: var(--text);
+      font-weight: 900;
     }
 
     .output-info strong {
       display: block;
       margin-bottom: 4px;
-      word-break: break-all;
+      word-break: break-word;
     }
 
     .output-info span {
       color: var(--muted);
       font-size: 13px;
-    }
-
-    .status {
-      padding: 12px 14px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.06);
-      color: var(--muted);
-      border: 1px solid var(--border);
       line-height: 1.45;
-      font-size: 14px;
-    }
-
-    .mini {
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.45;
-      margin: 0;
     }
 
     .hidden { display: none !important; }
 
-    @media (max-width: 960px) {
+    /* Cropper besser sichtbar machen */
+    .cropper-view-box,
+    .cropper-face {
+      border-radius: 0;
+    }
+
+    .cropper-line,
+    .cropper-point {
+      background-color: var(--accent);
+    }
+
+    .cropper-point {
+      width: 12px;
+      height: 12px;
+      opacity: 1;
+    }
+
+    .cropper-crop-box {
+      outline: 2px solid rgba(47,107,255,0.65);
+      outline-offset: -2px;
+    }
+
+    .cropper-modal {
+      background: rgba(16,32,58,0.45);
+    }
+
+    @media (max-width: 980px) {
       .panel.active {
         grid-template-columns: 1fr;
       }
 
       .preview { min-height: auto; }
-      .workspace { min-height: 420px; }
+      .workspace { min-height: 460px; }
     }
 
     @media (max-width: 640px) {
-      body { padding: 14px; }
-      .tabs { width: 100%; justify-content: stretch; }
+      body { padding: 12px; }
+      .tabs { width: 100%; }
       .tab-btn { flex: 1; }
       .output-item {
         grid-template-columns: 1fr;
       }
-      .output-item img {
+      .output-thumb, .pdf-thumb {
         width: 100%;
         height: 180px;
       }
@@ -351,7 +358,7 @@
     <div class="header">
       <div class="title">
         <h1>Bild-Tool</h1>
-        <p>Zuschneiden, drehen, zoomen und Dateien direkt im Browser umwandeln. Läuft komplett ohne Backend und passt damit auf GitHub Pages.</p>
+        <p>Bild zuschneiden, drehen, zoomen und Formate im Browser umwandeln. Alles lokal auf deinem Gerät, passend für GitHub Pages.</p>
       </div>
     </div>
 
@@ -364,7 +371,7 @@
       <div class="card controls">
         <div>
           <h2>Bild zuschneiden</h2>
-          <p class="sub">Datei wählen, dann den Ausschnitt direkt mit der Maus ziehen, an den Rändern oder Ecken ändern, drehen, zoomen und als PNG speichern.</p>
+          <p class="sub">Bild laden, den Ausschnitt direkt mit der Maus an den Ecken oder Kanten ziehen, verschieben, drehen, zoomen und als PNG downloaden.</p>
         </div>
 
         <div class="field">
@@ -380,19 +387,18 @@
             <option value="1.7777777778">16:9</option>
             <option value="1.3333333333">4:3</option>
             <option value="0.75">3:4</option>
-            <option value="1.25">5:4</option>
             <option value="custom">Eigen</option>
           </select>
         </div>
 
         <div class="field hidden" id="customRatioWrap">
           <label for="customRatio">Eigenes Verhältnis (Breite / Höhe)</label>
-          <input id="customRatio" type="number" step="0.01" min="0.01" value="1" />
+          <input id="customRatio" type="number" step="0.01" min="0.01" value="1">
         </div>
 
         <div class="field">
           <label for="zoomRange">Zoom</label>
-          <input id="zoomRange" type="range" min="0.1" max="3" step="0.01" value="1" />
+          <input id="zoomRange" type="range" min="0.2" max="3" step="0.01" value="1">
         </div>
 
         <div class="btn-row">
@@ -405,17 +411,17 @@
           <button class="primary" id="downloadCropBtn" type="button">PNG herunterladen</button>
         </div>
 
-        <p class="mini">Hinweis: Das Zuschneiden funktioniert nur mit Bilddateien. PDF ist hier absichtlich nicht eingebaut, weil das im Browser unnötig kompliziert wird. Der Rahmen ist bewusst direkt sichtbar und anfassbar gemacht.</p>
+        <div class="status">Tipp: In der Mitte verschieben, an den Kanten oder Ecken ziehen. Wenn du nichts siehst, wurde noch keine Bilddatei geladen.</div>
+        <p class="mini">Der Zuschnitt funktioniert nur mit Bildern. PDF ist hier nicht eingebaut, weil das im Browser unnötig schwer und fehleranfällig wird.</p>
       </div>
 
       <div class="card preview">
         <div class="workspace">
-          <div class="status" style="position:absolute; top:14px; left:14px; right:14px; z-index:2; max-width: 520px; margin:0; pointer-events:none;">Tipp: Den Ausschnitt an den Ecken oder Kanten ziehen. In der Mitte verschieben.</div>
           <div id="cropHint" class="hint">
-            Hier erscheint das Bild nach dem Upload.<br />
-            Dann kannst du den Ausschnitt direkt ziehen und anpassen.
+            Hier erscheint dein Bild nach dem Upload.<br>
+            Dann kannst du den Ausschnitt direkt ziehen.
           </div>
-          <img id="cropImage" class="crop-area hidden" alt="Vorschau" />
+          <img id="cropImage" class="crop-area hidden" alt="Vorschau">
         </div>
       </div>
     </section>
@@ -424,12 +430,12 @@
       <div class="card controls">
         <div>
           <h2>Dateien konvertieren</h2>
-          <p class="sub">Bildformate untereinander umwandeln oder Bilder als PDF speichern.</p>
+          <p class="sub">PNG, JPG und WEBP untereinander umwandeln oder ein Bild als PDF speichern.</p>
         </div>
 
         <div class="field">
           <label for="convertFile">Datei</label>
-          <input id="convertFile" type="file" accept="image/*,.pdf" />
+          <input id="convertFile" type="file" accept="image/*,.pdf">
         </div>
 
         <div class="field">
@@ -443,8 +449,8 @@
         </div>
 
         <div class="field" id="qualityWrap">
-          <label for="qualityRange">Qualität (JPG/WEBP)</label>
-          <input id="qualityRange" type="range" min="0.1" max="1" step="0.01" value="0.92" />
+          <label for="qualityRange">Qualität (nur JPG / WEBP)</label>
+          <input id="qualityRange" type="range" min="0.1" max="1" step="0.01" value="0.92">
         </div>
 
         <div class="btn-row">
@@ -453,12 +459,12 @@
         </div>
 
         <div class="status" id="convertStatus">Noch keine Datei geladen.</div>
-        <p class="mini">PDF-Eingaben werden hier nicht gelesen. Für V1 ist nur Bild → PDF drin, weil das im Browser zuverlässig funktioniert.</p>
+        <p class="mini">PDF-Eingaben werden nicht gelesen. Bild → PDF funktioniert, PDF → Bild ist nicht Teil dieser Version.</p>
       </div>
 
       <div class="card preview">
         <div class="workspace">
-          <div class="output-box" style="padding:18px; width:100%;">
+          <div class="output-box">
             <div id="convertHint" class="hint">Nach der Konvertierung erscheint hier eine Vorschau und ein Download-Button.</div>
             <div id="outputList" class="output-list"></div>
           </div>
@@ -468,6 +474,11 @@
   </div>
 
   <script>
+    const { jsPDF } = window.jspdf;
+
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const panels = document.querySelectorAll('.panel');
+
     const cropFile = document.getElementById('cropFile');
     const cropImage = document.getElementById('cropImage');
     const cropHint = document.getElementById('cropHint');
@@ -490,20 +501,21 @@
     const outputList = document.getElementById('outputList');
     const convertHint = document.getElementById('convertHint');
 
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    const panels = document.querySelectorAll('.panel');
-
     let cropper = null;
     let cropObjectUrl = null;
-    let convertObjectUrl = null;
     let convertFileData = null;
+    let activeDownloadUrl = null;
 
-    const { jsPDF } = window.jspdf;
+    function revokeActiveDownloadUrl() {
+      if (activeDownloadUrl) {
+        URL.revokeObjectURL(activeDownloadUrl);
+        activeDownloadUrl = null;
+      }
+    }
 
-    function setStatus(message, isError = false) {
+    function setStatus(message, error = false) {
       convertStatus.textContent = message;
-      convertStatus.style.color = isError ? '#ffd2d2' : 'var(--muted)';
-      convertStatus.style.borderColor = isError ? 'rgba(255,125,125,0.35)' : 'var(--border)';
+      convertStatus.style.color = error ? '#b42318' : 'var(--muted)';
     }
 
     function switchTab(tabId) {
@@ -526,24 +538,24 @@
       }
     }
 
-    function ratioValue() {
-      const v = aspectRatio.value;
-      if (v === 'free') return NaN;
-      if (v === 'custom') {
+    function getAspectRatioValue() {
+      const value = aspectRatio.value;
+      if (value === 'free') return NaN;
+      if (value === 'custom') {
         const parsed = Number(customRatio.value);
         return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
       }
-      return Number(v);
+      return Number(value);
     }
 
     aspectRatio.addEventListener('change', () => {
       customRatioWrap.classList.toggle('hidden', aspectRatio.value !== 'custom');
-      if (cropper) cropper.setAspectRatio(ratioValue());
+      if (cropper) cropper.setAspectRatio(getAspectRatioValue());
     });
 
     customRatio.addEventListener('input', () => {
       if (cropper && aspectRatio.value === 'custom') {
-        cropper.setAspectRatio(ratioValue());
+        cropper.setAspectRatio(getAspectRatioValue());
       }
     });
 
@@ -551,7 +563,7 @@
       const file = cropFile.files?.[0];
       if (!file) return;
       if (!file.type.startsWith('image/')) {
-        alert('Für das Zuschneiden bitte eine Bilddatei auswählen.');
+        alert('Bitte eine Bilddatei für das Zuschneiden wählen.');
         cropFile.value = '';
         return;
       }
@@ -559,6 +571,7 @@
       destroyCropper();
       if (cropObjectUrl) URL.revokeObjectURL(cropObjectUrl);
       cropObjectUrl = URL.createObjectURL(file);
+
       cropImage.src = cropObjectUrl;
       cropImage.classList.remove('hidden');
       cropHint.classList.add('hidden');
@@ -578,17 +591,17 @@
           cropBoxMovable: true,
           cropBoxResizable: true,
           toggleDragModeOnDblclick: false,
-          aspectRatio: ratioValue(),
+          aspectRatio: getAspectRatioValue(),
+          ready() {
+            zoomRange.value = '1';
+          }
         });
-        zoomRange.value = '1';
       };
     });
 
     zoomRange.addEventListener('input', () => {
       if (!cropper) return;
-      const current = cropper.getImageData().ratio || 1;
-      const target = Number(zoomRange.value);
-      cropper.zoomTo(target / current);
+      cropper.zoomTo(Number(zoomRange.value));
     });
 
     rotateLeftBtn.addEventListener('click', () => {
@@ -603,20 +616,24 @@
       if (!cropper) return;
       cropper.reset();
       zoomRange.value = '1';
-      if (aspectRatio.value !== 'free') cropper.setAspectRatio(ratioValue());
+      if (aspectRatio.value !== 'free') {
+        cropper.setAspectRatio(getAspectRatioValue());
+      }
     });
 
-    downloadCropBtn.addEventListener('click', async () => {
+    downloadCropBtn.addEventListener('click', () => {
       if (!cropper) {
         alert('Erst ein Bild hochladen.');
         return;
       }
+
       const canvas = cropper.getCroppedCanvas({
         imageSmoothingEnabled: true,
-        imageSmoothingQuality: 'high',
+        imageSmoothingQuality: 'high'
       });
+
       if (!canvas) {
-        alert('Der Ausschnitt konnte nicht erzeugt werden.');
+        alert('Der Zuschnitt konnte nicht erzeugt werden.');
         return;
       }
 
@@ -625,14 +642,15 @@
           alert('PNG konnte nicht erstellt werden.');
           return;
         }
-        const url = URL.createObjectURL(blob);
+
+        revokeActiveDownloadUrl();
+        activeDownloadUrl = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
+        a.href = activeDownloadUrl;
         a.download = 'zugeschnitten.png';
         document.body.appendChild(a);
         a.click();
         a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 1500);
       }, 'image/png');
     });
 
@@ -648,9 +666,9 @@
         return;
       }
       convertFileData = file;
-      setStatus(`Geladen: ${file.name} (${Math.round(file.size / 1024)} KB)`);
+      setStatus(`Geladen: ${file.name}`);
       if (file.type === 'application/pdf') {
-        setStatus('PDF erkannt. In dieser Version ist nur Bild → PDF eingebaut.', true);
+        setStatus('PDF erkannt. In dieser Version ist nur Bild → PDF drin.', true);
       }
     });
 
@@ -666,19 +684,10 @@
       return name.replace(/\.[^.]+$/, '');
     }
 
-    function downloadDataUrl(dataUrl, filename) {
-      const a = document.createElement('a');
-      a.href = dataUrl;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    }
-
-    function canvasToDataUrl(canvas, format, quality) {
-      if (format === 'jpeg') return canvas.toDataURL('image/jpeg', quality);
-      if (format === 'webp') return canvas.toDataURL('image/webp', quality);
-      return canvas.toDataURL('image/png');
+    function blobToObjectUrl(blob) {
+      revokeActiveDownloadUrl();
+      activeDownloadUrl = URL.createObjectURL(blob);
+      return activeDownloadUrl;
     }
 
     function imageElementFromUrl(url) {
@@ -688,6 +697,11 @@
         img.onerror = reject;
         img.src = url;
       });
+    }
+
+    async function dataUrlToBlob(dataUrl) {
+      const response = await fetch(dataUrl);
+      return await response.blob();
     }
 
     async function convertImageFile(file, targetFormat, quality) {
@@ -709,25 +723,74 @@
             hotfixes: ['px_scaling']
           });
           pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+          const blob = pdf.output('blob');
           return {
-            dataUrl: pdf.output('datauristring'),
-            mime: 'application/pdf',
             name: `${fileBaseName(file.name)}.pdf`,
-            preview: null,
+            mime: 'application/pdf',
+            blob,
+            previewType: 'pdf'
           };
         }
 
-        const dataUrl = canvasToDataUrl(canvas, targetFormat, quality);
+        const mime = targetFormat === 'jpeg' ? 'image/jpeg' : `image/${targetFormat}`;
+        const dataUrl = canvas.toDataURL(mime, quality);
+        const blob = await dataUrlToBlob(dataUrl);
         const ext = targetFormat === 'jpeg' ? 'jpg' : targetFormat;
         return {
-          dataUrl,
-          mime: targetFormat === 'jpeg' ? 'image/jpeg' : `image/${ext}`,
           name: `${fileBaseName(file.name)}.${ext}`,
-          preview: dataUrl,
+          mime,
+          blob,
+          previewType: 'image',
+          previewUrl: URL.createObjectURL(blob)
         };
       } finally {
         URL.revokeObjectURL(sourceUrl);
       }
+    }
+
+    function renderOutput(result) {
+      outputList.innerHTML = '';
+      convertHint.classList.add('hidden');
+
+      const item = document.createElement('div');
+      item.className = 'output-item';
+
+      const preview = document.createElement('div');
+      if (result.previewType === 'image') {
+        const img = document.createElement('img');
+        img.className = 'output-thumb';
+        img.alt = 'Vorschau';
+        img.src = result.previewUrl;
+        preview.appendChild(img);
+      } else {
+        const box = document.createElement('div');
+        box.className = 'pdf-thumb';
+        box.textContent = 'PDF';
+        preview.appendChild(box);
+      }
+
+      const info = document.createElement('div');
+      info.className = 'output-info';
+      info.innerHTML = `<strong>${result.name}</strong><span>${result.mime}</span>`;
+
+      const btn = document.createElement('button');
+      btn.className = 'primary';
+      btn.type = 'button';
+      btn.textContent = 'Download';
+      btn.addEventListener('click', () => {
+        const url = blobToObjectUrl(result.blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = result.name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      });
+
+      item.appendChild(preview);
+      item.appendChild(info);
+      item.appendChild(btn);
+      outputList.appendChild(item);
     }
 
     convertBtn.addEventListener('click', async () => {
@@ -736,44 +799,30 @@
         alert('Erst eine Datei hochladen.');
         return;
       }
-      if (file.type === 'application/pdf') {
-        alert('PDF → Bild ist in dieser Version nicht drin. Bild → PDF funktioniert.');
-        return;
-      }
       if (!file.type.startsWith('image/')) {
-        alert('Bitte eine Bilddatei auswählen.');
+        alert('Nur Bilddateien werden in dieser Version konvertiert. PDF-Eingabe ist nicht drin.');
         return;
       }
 
       try {
-        convertHint.classList.add('hidden');
-        outputList.innerHTML = '';
         setStatus('Konvertierung läuft ...');
-
         const targetFormat = outputFormat.value;
         const quality = Number(qualityRange.value);
         const result = await convertImageFile(file, targetFormat, quality);
-
-        const item = document.createElement('div');
-        item.className = 'output-item';
-        item.innerHTML = `
-          <img alt="Vorschau" src="${result.preview || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDMwMCAyMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiMxMzE5MjgiLz48dGV4dCB4PSIxNSIgeT0iMTA1IiBmaWxsPSIjYTdiM2NmIiBmb250LXNpemU9IjE2IiBmb250LWZhbWlseT0iSW50ZXIsIEFyaWFsIj5QREYgRGF0ZWk8L3RleHQ+PC9zdmc+'}">
-          <div class="output-info">
-            <strong>${result.name}</strong>
-            <span>${result.mime}</span>
-          </div>
-          <button class="primary" type="button">Download</button>
-        `;
-
-        const btn = item.querySelector('button');
-        btn.addEventListener('click', () => downloadDataUrl(result.dataUrl, result.name));
-        outputList.appendChild(item);
+        renderOutput(result);
         setStatus(`Fertig: ${result.name}`);
       } catch (err) {
         console.error(err);
         setStatus('Konvertierung fehlgeschlagen.', true);
-        alert('Konvertierung fehlgeschlagen. Die Datei kann beschädigt sein oder der Browser unterstützt das Format nicht sauber.');
+        alert('Konvertierung fehlgeschlagen. Der Browser konnte die Datei nicht verarbeiten.');
       }
+    });
+
+    window.addEventListener('beforeunload', () => {
+      destroyCropper();
+      if (cropObjectUrl) URL.revokeObjectURL(cropObjectUrl);
+      revokeActiveDownloadUrl();
+      if (convertFileData && convertFileData.previewUrl) URL.revokeObjectURL(convertFileData.previewUrl);
     });
   </script>
 </body>
