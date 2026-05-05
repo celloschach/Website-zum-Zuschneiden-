@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bild-Tool</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    /* Cropper-Optik zusätzlich schärfen, damit die Ziehpunkte klar erkennbar sind */
+    .cropper-view-box,
+    .cropper-face {
+      border-radius: 0;
+    }
+
+    .cropper-line,
+    .cropper-point {
+      background-color: #7c9cff;
+    }
+
+    .cropper-point {
+      width: 12px;
+      height: 12px;
+      opacity: 1;
+    }
+
+    .cropper-crop-box {
+      outline: 2px solid rgba(124,156,255,0.65);
+      outline-offset: -2px;
+    }
+
+    .cropper-modal {
+      background: rgba(0,0,0,0.55);
+    }
+
+    :root {
+    :root {
+      --bg: #0b1020;
+      --panel: rgba(255,255,255,0.06);
+      --panel-2: rgba(255,255,255,0.09);
+      --border: rgba(255,255,255,0.12);
+      --text: #eaf0ff;
+      --muted: #a8b3cf;
+      --accent: #7c9cff;
+      --accent-2: #5eead4;
+      --danger: #ff7d7d;
+      --shadow: 0 18px 60px rgba(0,0,0,0.35);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(124,156,255,0.20), transparent 30%),
+        radial-gradient(circle at top right, rgba(94,234,212,0.14), transparent 28%),
+        linear-gradient(180deg, #08101f 0%, #0b1020 100%);
+      color: var(--text);
+    }
+
+    body {
+      padding: 24px;
+    }
+
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+
+    .title h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.05;
+    }
+
+    .title p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 72ch;
+      line-height: 1.5;
+    }
+
+    .tabs {
+      display: inline-flex;
+      gap: 8px;
+      padding: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .tab-btn {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 12px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: 0.2s ease;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, rgba(124,156,255,0.22), rgba(94,234,212,0.18));
+      color: var(--text);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.10);
+    }
+
+    .panel {
+      display: none;
+      gap: 18px;
+    }
+
+    .panel.active {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .controls {
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .card h2 {
+      margin: 0 0 4px;
+      font-size: 18px;
+    }
+
+    .card .sub {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    input[type="file"],
+    select,
+    input[type="range"] {
+      width: 100%;
+    }
+
+    select, input[type="file"], input[type="number"] {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 12px 14px;
+      outline: none;
+    }
+
+    input[type="range"] {
+      accent-color: var(--accent);
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+
+    .primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #07111f;
+    }
+
+    .secondary {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .danger {
+      background: rgba(255,125,125,0.12);
+      color: #ffd2d2;
+      border: 1px solid rgba(255,125,125,0.22);
+    }
+
+    .preview {
+      padding: 18px;
+      min-height: 640px;
+    }
+
+    .workspace {
+      min-height: 560px;
+      display: grid;
+      place-items: center;
+      border: 1px dashed rgba(255,255,255,0.16);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.03);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .workspace .hint {
+      color: var(--muted);
+      text-align: center;
+      padding: 20px;
+      line-height: 1.5;
+    }
+
+    .crop-area {
+      width: 100%;
+      max-height: 72vh;
+      display: block;
+    }
+
+    .output-box {
+      display: grid;
+      gap: 14px;
+      width: 100%;
+    }
+
+    .output-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .output-item {
+      display: grid;
+      grid-template-columns: 96px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+
+    .output-item img {
+      width: 96px;
+      height: 72px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.2);
+    }
+
+    .output-info {
+      min-width: 0;
+    }
+
+    .output-info strong {
+      display: block;
+      margin-bottom: 4px;
+      word-break: break-all;
+    }
+
+    .output-info span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.06);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      line-height: 1.45;
+      font-size: 14px;
+    }
+
+    .mini {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 960px) {
+      .panel.active {
+        grid-template-columns: 1fr;
+      }
+
+      .preview { min-height: auto; }
+      .workspace { min-height: 420px; }
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 14px; }
+      .tabs { width: 100%; justify-content: stretch; }
+      .tab-btn { flex: 1; }
+      .output-item {
+        grid-template-columns: 1fr;
+      }
+      .output-item img {
+        width: 100%;
+        height: 180px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="title">
+        <h1>Bild-Tool</h1>
+        <p>Zuschneiden, drehen, zoomen und Dateien direkt im Browser umwandeln. Läuft komplett ohne Backend und passt damit auf GitHub Pages.</p>
+      </div>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Werkzeuge">
+      <button class="tab-btn active" data-tab="cropTab" role="tab" aria-selected="true">Zuschneiden</button>
+      <button class="tab-btn" data-tab="convertTab" role="tab" aria-selected="false">Konvertieren</button>
+    </div>
+
+    <section id="cropTab" class="panel active" role="tabpanel">
+      <div class="card controls">
+        <div>
+          <h2>Bild zuschneiden</h2>
+          <p class="sub">Datei wählen, dann den Ausschnitt direkt mit der Maus ziehen, an den Rändern oder Ecken ändern, drehen, zoomen und als PNG speichern.</p>
+        </div>
+
+        <div class="field">
+          <label for="cropFile">Bilddatei</label>
+          <input id="cropFile" type="file" accept="image/*" />
+        </div>
+
+        <div class="field">
+          <label for="aspectRatio">Seitenverhältnis</label>
+          <select id="aspectRatio">
+            <option value="free">Frei</option>
+            <option value="1">1:1</option>
+            <option value="1.7777777778">16:9</option>
+            <option value="1.3333333333">4:3</option>
+            <option value="0.75">3:4</option>
+            <option value="1.25">5:4</option>
+            <option value="custom">Eigen</option>
+          </select>
+        </div>
+
+        <div class="field hidden" id="customRatioWrap">
+          <label for="customRatio">Eigenes Verhältnis (Breite / Höhe)</label>
+          <input id="customRatio" type="number" step="0.01" min="0.01" value="1" />
+        </div>
+
+        <div class="field">
+          <label for="zoomRange">Zoom</label>
+          <input id="zoomRange" type="range" min="0.1" max="3" step="0.01" value="1" />
+        </div>
+
+        <div class="btn-row">
+          <button class="secondary" id="rotateLeftBtn" type="button">−90°</button>
+          <button class="secondary" id="rotateRightBtn" type="button">+90°</button>
+          <button class="secondary" id="resetCropBtn" type="button">Zurücksetzen</button>
+        </div>
+
+        <div class="btn-row">
+          <button class="primary" id="downloadCropBtn" type="button">PNG herunterladen</button>
+        </div>
+
+        <p class="mini">Hinweis: Das Zuschneiden funktioniert nur mit Bilddateien. PDF ist hier absichtlich nicht eingebaut, weil das im Browser unnötig kompliziert wird. Der Rahmen ist bewusst direkt sichtbar und anfassbar gemacht.</p>
+      </div>
+
+      <div class="card preview">
+        <div class="workspace">
+          <div class="status" style="position:absolute; top:14px; left:14px; right:14px; z-index:2; max-width: 520px; margin:0; pointer-events:none;">Tipp: Den Ausschnitt an den Ecken oder Kanten ziehen. In der Mitte verschieben.</div>
+          <div id="cropHint" class="hint">
+            Hier erscheint das Bild nach dem Upload.<br />
+            Dann kannst du den Ausschnitt direkt ziehen und anpassen.
+          </div>
+          <img id="cropImage" class="crop-area hidden" alt="Vorschau" />
+        </div>
+      </div>
+    </section>
+
+    <section id="convertTab" class="panel" role="tabpanel">
+      <div class="card controls">
+        <div>
+          <h2>Dateien konvertieren</h2>
+          <p class="sub">Bildformate untereinander umwandeln oder Bilder als PDF speichern.</p>
+        </div>
+
+        <div class="field">
+          <label for="convertFile">Datei</label>
+          <input id="convertFile" type="file" accept="image/*,.pdf" />
+        </div>
+
+        <div class="field">
+          <label for="outputFormat">Zielformat</label>
+          <select id="outputFormat">
+            <option value="png">PNG</option>
+            <option value="jpeg">JPG</option>
+            <option value="webp">WEBP</option>
+            <option value="pdf">PDF</option>
+          </select>
+        </div>
+
+        <div class="field" id="qualityWrap">
+          <label for="qualityRange">Qualität (JPG/WEBP)</label>
+          <input id="qualityRange" type="range" min="0.1" max="1" step="0.01" value="0.92" />
+        </div>
+
+        <div class="btn-row">
+          <button class="primary" id="convertBtn" type="button">Konvertieren</button>
+          <button class="secondary" id="clearConvertBtn" type="button">Löschen</button>
+        </div>
+
+        <div class="status" id="convertStatus">Noch keine Datei geladen.</div>
+        <p class="mini">PDF-Eingaben werden hier nicht gelesen. Für V1 ist nur Bild → PDF drin, weil das im Browser zuverlässig funktioniert.</p>
+      </div>
+
+      <div class="card preview">
+        <div class="workspace">
+          <div class="output-box" style="padding:18px; width:100%;">
+            <div id="convertHint" class="hint">Nach der Konvertierung erscheint hier eine Vorschau und ein Download-Button.</div>
+            <div id="outputList" class="output-list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const cropFile = document.getElementById('cropFile');
+    const cropImage = document.getElementById('cropImage');
+    const cropHint = document.getElementById('cropHint');
+    const aspectRatio = document.getElementById('aspectRatio');
+    const customRatioWrap = document.getElementById('customRatioWrap');
+    const customRatio = document.getElementById('customRatio');
+    const zoomRange = document.getElementById('zoomRange');
+    const rotateLeftBtn = document.getElementById('rotateLeftBtn');
+    const rotateRightBtn = document.getElementById('rotateRightBtn');
+    const resetCropBtn = document.getElementById('resetCropBtn');
+    const downloadCropBtn = document.getElementById('downloadCropBtn');
+
+    const convertFile = document.getElementById('convertFile');
+    const outputFormat = document.getElementById('outputFormat');
+    const qualityWrap = document.getElementById('qualityWrap');
+    const qualityRange = document.getElementById('qualityRange');
+    const convertBtn = document.getElementById('convertBtn');
+    const clearConvertBtn = document.getElementById('clearConvertBtn');
+    const convertStatus = document.getElementById('convertStatus');
+    const outputList = document.getElementById('outputList');
+    const convertHint = document.getElementById('convertHint');
+
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const panels = document.querySelectorAll('.panel');
+
+    let cropper = null;
+    let cropObjectUrl = null;
+    let convertObjectUrl = null;
+    let convertFileData = null;
+
+    const { jsPDF } = window.jspdf;
+
+    function setStatus(message, isError = false) {
+      convertStatus.textContent = message;
+      convertStatus.style.color = isError ? '#ffd2d2' : 'var(--muted)';
+      convertStatus.style.borderColor = isError ? 'rgba(255,125,125,0.35)' : 'var(--border)';
+    }
+
+    function switchTab(tabId) {
+      tabButtons.forEach(btn => {
+        const active = btn.dataset.tab === tabId;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+      panels.forEach(panel => panel.classList.toggle('active', panel.id === tabId));
+    }
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    function destroyCropper() {
+      if (cropper) {
+        cropper.destroy();
+        cropper = null;
+      }
+    }
+
+    function ratioValue() {
+      const v = aspectRatio.value;
+      if (v === 'free') return NaN;
+      if (v === 'custom') {
+        const parsed = Number(customRatio.value);
+        return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+      }
+      return Number(v);
+    }
+
+    aspectRatio.addEventListener('change', () => {
+      customRatioWrap.classList.toggle('hidden', aspectRatio.value !== 'custom');
+      if (cropper) cropper.setAspectRatio(ratioValue());
+    });
+
+    customRatio.addEventListener('input', () => {
+      if (cropper && aspectRatio.value === 'custom') {
+        cropper.setAspectRatio(ratioValue());
+      }
+    });
+
+    cropFile.addEventListener('change', () => {
+      const file = cropFile.files?.[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        alert('Für das Zuschneiden bitte eine Bilddatei auswählen.');
+        cropFile.value = '';
+        return;
+      }
+
+      destroyCropper();
+      if (cropObjectUrl) URL.revokeObjectURL(cropObjectUrl);
+      cropObjectUrl = URL.createObjectURL(file);
+      cropImage.src = cropObjectUrl;
+      cropImage.classList.remove('hidden');
+      cropHint.classList.add('hidden');
+
+      cropImage.onload = () => {
+        cropper = new Cropper(cropImage, {
+          viewMode: 1,
+          dragMode: 'move',
+          autoCropArea: 1,
+          responsive: true,
+          background: false,
+          movable: true,
+          rotatable: true,
+          scalable: true,
+          zoomable: true,
+          zoomOnWheel: true,
+          cropBoxMovable: true,
+          cropBoxResizable: true,
+          toggleDragModeOnDblclick: false,
+          aspectRatio: ratioValue(),
+        });
+        zoomRange.value = '1';
+      };
+    });
+
+    zoomRange.addEventListener('input', () => {
+      if (!cropper) return;
+      const current = cropper.getImageData().ratio || 1;
+      const target = Number(zoomRange.value);
+      cropper.zoomTo(target / current);
+    });
+
+    rotateLeftBtn.addEventListener('click', () => {
+      if (cropper) cropper.rotate(-90);
+    });
+
+    rotateRightBtn.addEventListener('click', () => {
+      if (cropper) cropper.rotate(90);
+    });
+
+    resetCropBtn.addEventListener('click', () => {
+      if (!cropper) return;
+      cropper.reset();
+      zoomRange.value = '1';
+      if (aspectRatio.value !== 'free') cropper.setAspectRatio(ratioValue());
+    });
+
+    downloadCropBtn.addEventListener('click', async () => {
+      if (!cropper) {
+        alert('Erst ein Bild hochladen.');
+        return;
+      }
+      const canvas = cropper.getCroppedCanvas({
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high',
+      });
+      if (!canvas) {
+        alert('Der Ausschnitt konnte nicht erzeugt werden.');
+        return;
+      }
+
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          alert('PNG konnte nicht erstellt werden.');
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'zugeschnitten.png';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+      }, 'image/png');
+    });
+
+    outputFormat.addEventListener('change', () => {
+      qualityWrap.classList.toggle('hidden', !['jpeg', 'webp'].includes(outputFormat.value));
+    });
+
+    convertFile.addEventListener('change', () => {
+      const file = convertFile.files?.[0];
+      if (!file) {
+        convertFileData = null;
+        setStatus('Noch keine Datei geladen.');
+        return;
+      }
+      convertFileData = file;
+      setStatus(`Geladen: ${file.name} (${Math.round(file.size / 1024)} KB)`);
+      if (file.type === 'application/pdf') {
+        setStatus('PDF erkannt. In dieser Version ist nur Bild → PDF eingebaut.', true);
+      }
+    });
+
+    clearConvertBtn.addEventListener('click', () => {
+      convertFile.value = '';
+      convertFileData = null;
+      outputList.innerHTML = '';
+      convertHint.classList.remove('hidden');
+      setStatus('Noch keine Datei geladen.');
+    });
+
+    function fileBaseName(name) {
+      return name.replace(/\.[^.]+$/, '');
+    }
+
+    function downloadDataUrl(dataUrl, filename) {
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    function canvasToDataUrl(canvas, format, quality) {
+      if (format === 'jpeg') return canvas.toDataURL('image/jpeg', quality);
+      if (format === 'webp') return canvas.toDataURL('image/webp', quality);
+      return canvas.toDataURL('image/png');
+    }
+
+    function imageElementFromUrl(url) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = url;
+      });
+    }
+
+    async function convertImageFile(file, targetFormat, quality) {
+      const sourceUrl = URL.createObjectURL(file);
+      try {
+        const img = await imageElementFromUrl(sourceUrl);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+
+        if (targetFormat === 'pdf') {
+          const imgData = canvas.toDataURL('image/png');
+          const pdf = new jsPDF({
+            orientation: canvas.width >= canvas.height ? 'l' : 'p',
+            unit: 'px',
+            format: [canvas.width, canvas.height],
+            hotfixes: ['px_scaling']
+          });
+          pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+          return {
+            dataUrl: pdf.output('datauristring'),
+            mime: 'application/pdf',
+            name: `${fileBaseName(file.name)}.pdf`,
+            preview: null,
+          };
+        }
+
+        const dataUrl = canvasToDataUrl(canvas, targetFormat, quality);
+        const ext = targetFormat === 'jpeg' ? 'jpg' : targetFormat;
+        return {
+          dataUrl,
+          mime: targetFormat === 'jpeg' ? 'image/jpeg' : `image/${ext}`,
+          name: `${fileBaseName(file.name)}.${ext}`,
+          preview: dataUrl,
+        };
+      } finally {
+        URL.revokeObjectURL(sourceUrl);
+      }
+    }
+
+    convertBtn.addEventListener('click', async () => {
+      const file = convertFileData;
+      if (!file) {
+        alert('Erst eine Datei hochladen.');
+        return;
+      }
+      if (file.type === 'application/pdf') {
+        alert('PDF → Bild ist in dieser Version nicht drin. Bild → PDF funktioniert.');
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        alert('Bitte eine Bilddatei auswählen.');
+        return;
+      }
+
+      try {
+        convertHint.classList.add('hidden');
+        outputList.innerHTML = '';
+        setStatus('Konvertierung läuft ...');
+
+        const targetFormat = outputFormat.value;
+        const quality = Number(qualityRange.value);
+        const result = await convertImageFile(file, targetFormat, quality);
+
+        const item = document.createElement('div');
+        item.className = 'output-item';
+        item.innerHTML = `
+          <img alt="Vorschau" src="${result.preview || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDMwMCAyMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiMxMzE5MjgiLz48dGV4dCB4PSIxNSIgeT0iMTA1IiBmaWxsPSIjYTdiM2NmIiBmb250LXNpemU9IjE2IiBmb250LWZhbWlseT0iSW50ZXIsIEFyaWFsIj5QREYgRGF0ZWk8L3RleHQ+PC9zdmc+'}">
+          <div class="output-info">
+            <strong>${result.name}</strong>
+            <span>${result.mime}</span>
+          </div>
+          <button class="primary" type="button">Download</button>
+        `;
+
+        const btn = item.querySelector('button');
+        btn.addEventListener('click', () => downloadDataUrl(result.dataUrl, result.name));
+        outputList.appendChild(item);
+        setStatus(`Fertig: ${result.name}`);
+      } catch (err) {
+        console.error(err);
+        setStatus('Konvertierung fehlgeschlagen.', true);
+        alert('Konvertierung fehlgeschlagen. Die Datei kann beschädigt sein oder der Browser unterstützt das Format nicht sauber.');
+      }
+    });
+  </script>
+</body>
+</html>
